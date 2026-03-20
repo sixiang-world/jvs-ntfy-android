@@ -10,6 +10,7 @@ import android.media.AudioManager
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Bundle
+import android.os.Build
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import io.heckel.ntfy.R
@@ -95,6 +96,10 @@ class NotificationService(val context: Context) {
             .setShowWhen(true)
             .setOnlyAlertOnce(true) // Do not vibrate or play sound if already showing (updates!)
             .setAutoCancel(true) // Cancel when notification is clicked
+        // Enable LiveUpdate for Android 16+ (API 36+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            builder.setLiveUpdateEnabled(true)
+        }
         setStyleAndText(builder, subscription, notification) // Preview picture or big text style
         setClickAction(builder, subscription, notification)
         maybeSetDeleteIntent(builder, insistent)
@@ -405,6 +410,10 @@ class NotificationService(val context: Context) {
             else -> NotificationChannel(channelId, context.getString(R.string.common_priority_default_name), NotificationManager.IMPORTANCE_DEFAULT)
         }
         channel.group = group
+        // Enable LiveUpdate for Android 16+ (API 36+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            channel.setLiveUpdateAllowed(true)
+        }
         notificationManager.createNotificationChannel(channel)
     }
 

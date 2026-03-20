@@ -4,6 +4,17 @@ or as .apk files on the [GitHub releases page](https://github.com/binwiederhier/
 
 If you're downloading the APKs from GitHub, they are signed with a certificate with the following SHA-256 fingerprint: `6e145d7ae685eff75468e5067e03a6c3645453343e4e181dac8b6b17ff67489d`. You can also query the DNS TXT records for `ntfy.sh` to find this fingerprint.
 
+## ✨ LiveUpdate 实时通知 (Android 16+)
+
+本版本集成了 Android 16 的 **LiveUpdate** 实时更新通知功能。在 Android 16 及以上系统中，通知将显示在：
+- 📱 锁屏显著位置
+- ⌚ 常显屏幕 (AOD)
+- 📬 通知面板顶部
+- 📊 状态栏显著位置
+
+LiveUpdate 通知会自动更新内容而不会打扰用户，非常适合实时监控、下载进度、消息更新等场景。
+
+
 ## Build
 For up-to-date building instructions, please see the [official docs](https://docs.ntfy.sh/develop/#android-app).
 
