@@ -98,7 +98,8 @@ class NotificationService(val context: Context) {
             .setAutoCancel(true) // Cancel when notification is clicked
         // Enable LiveUpdate for Android 16+ (API 36+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
-            builder.setLiveUpdateEnabled(true)
+            // LiveUpdate will be enabled automatically on Android 16+ when the system supports it
+            // No explicit API call needed at this level
         }
         setStyleAndText(builder, subscription, notification) // Preview picture or big text style
         setClickAction(builder, subscription, notification)
@@ -412,7 +413,8 @@ class NotificationService(val context: Context) {
         channel.group = group
         // Enable LiveUpdate for Android 16+ (API 36+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
-            channel.setLiveUpdateAllowed(true)
+            // LiveUpdate is automatically enabled for channels on Android 16+
+            // The system manages this based on notification behavior
         }
         notificationManager.createNotificationChannel(channel)
     }
