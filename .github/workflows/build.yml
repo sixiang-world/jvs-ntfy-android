@@ -2,7 +2,7 @@ name: Build APK
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, feature/live-update-fluid-cloud ]
     tags:
       - 'v*'
   pull_request:
@@ -31,14 +31,14 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       
-      - name: Build F-Droid Debug APK
-        run: ./gradlew assembleFdroidDebug --no-daemon
-      
-      - name: Upload F-Droid Debug APK
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-fdroid-debug
-          path: app/build/outputs/apk/fdroid/debug/app-fdroid-debug.apk
+          name: app-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
       
       - name: Build F-Droid Release APK
