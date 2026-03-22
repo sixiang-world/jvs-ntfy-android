@@ -88,6 +88,7 @@ class NotificationService(val context: Context) {
         val channelId = toChannelId(groupId, notification.priority)
         val insistent = notification.priority == PRIORITY_MAX &&
                 (repository.getInsistentMaxPriorityEnabled() || subscription.insistent == Repository.INSISTENT_MAX_PRIORITY_ENABLED)
+        val isLiveUpdate = shouldPromoteToLiveUpdate(subscription, notification)
         val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.ic_notification)
             .setColor(Colors.notificationIcon(context))
@@ -95,12 +96,13 @@ class NotificationService(val context: Context) {
             .setWhen(notification.timestamp * 1000) // Set timestamp (convert seconds to millis)
             .setShowWhen(true)
             .setOnlyAlertOnce(true) // Do not vibrate or play sound if already showing (updates!)
-            .setAutoCancel(true) // Cancel when notification is clicked
-        // Enable LiveUpdate for Android 16+ (API 36+)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
-            // LiveUpdate will be enabled automatically on Android 16+ when the system supports it
-            // No explicit API call needed at this level
-        }
+            .setAutoCancel(!isLiveUpdate) // Live Update notifications are ongoing and not auto-cancelled
+            .apply {
+                if (isLiveUpdate) {
+                    setOngoing(true) // FLAG_ONGOING_EVENT: required for Live Update
+                    setRequestPromotedOngoing(true) // Request promotion to Live Update (流体云)
+                }
+            }
         setStyleAndText(builder, subscription, notification) // Preview picture or big text style
         setClickAction(builder, subscription, notification)
         maybeSetDeleteIntent(builder, insistent)
@@ -411,11 +413,6 @@ class NotificationService(val context: Context) {
             else -> NotificationChannel(channelId, context.getString(R.string.common_priority_default_name), NotificationManager.IMPORTANCE_DEFAULT)
         }
         channel.group = group
-        // Enable LiveUpdate for Android 16+ (API 36+)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
-            // LiveUpdate is automatically enabled for channels on Android 16+
-            // The system manages this based on notification behavior
-        }
         notificationManager.createNotificationChannel(channel)
     }
 
@@ -439,6 +436,31 @@ class NotificationService(val context: Context) {
             PRIORITY_MAX -> groupId + GROUP_SUFFIX_PRIORITY_MAX
             else -> groupId + GROUP_SUFFIX_PRIORITY_DEFAULT
         }
+    }
+
+    /**
+     * Determines if a notification should be promoted to a Live Update (流体云).
+     * Live Updates are persistent, high-priority notifications that show as ongoing activities.
+     * Only available on Android 16+ (API 36+).
+     *
+     * Criteria:
+     * - Must be Android 16+ (VANILLA_ICE_CREAM)
+     * - High or max priority notifications
+     * - Notifications with active download progress
+     */
+    private fun shouldPromoteToLiveUpdate(subscription: Subscription, notification: Notification): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            return false
+        }
+        // Promote high/max priority notifications
+        if (notification.priority >= PRIORITY_HIGH) {
+            return true
+        }
+        // Promote notifications with active download progress
+        if (notification.attachment?.progress in 0..99) {
+            return true
+        }
+        return false
     }
 
     private fun maybePlayInsistentSound(groupId: String, insistent: Boolean) {
